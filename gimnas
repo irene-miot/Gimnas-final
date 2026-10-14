@@ -1,0 +1,89 @@
+#include <iostream>
+#include <string>
+
+class Tarifa {
+private:
+    std::string nomTarifa;
+    double preuMensual;
+
+public:
+    Tarifa() : nomTarifa("Bàsica"), preuMensual(30.0) {}
+
+    Tarifa(const std::string& nom, double preu)
+        : nomTarifa(nom), preuMensual(preu > 0 ? preu : 0.0) {
+    }
+
+    double getPreuMensual() const {
+        return preuMensual;
+    }
+
+    std::string getNomTarifa() const {
+        return nomTarifa;
+    }
+};
+
+class Soci {
+private:
+    std::string nom;
+    int idSoci;
+
+protected:
+    Tarifa tarifa;
+
+public:
+    Soci(const std::string& nom, int id, const Tarifa& t)
+        : nom(nom), idSoci(id), tarifa(t) {
+    }
+
+    virtual ~Soci() = default;
+
+    virtual double calcularQuota() const {
+        return tarifa.getPreuMensual();
+    }
+
+    virtual void mostrarInfo() const {
+        std::cout << "ID: " << idSoci
+            << "Nom: " << nom
+            << "Tarifa: " << tarifa.getNomTarifa()
+            << "Quota: " << calcularQuota() << " euros" << std::endl;
+    }
+};
+
+
+class SociVIP : public Soci {
+private:
+    double descompteEntrenador;
+
+public:
+    SociVIP(const std::string& nom, int id, const Tarifa& t, double descompte)
+        : Soci(nom, id, t), descompteEntrenador(descompte) {
+    }
+
+    double calcularQuota() const override {
+        double preuBase = tarifa.getPreuMensual();
+        return preuBase - (preuBase * descompteEntrenador);
+    }
+
+    void mostrarInfo() const override {
+        Soci::mostrarInfo();
+        std::cout << "   [Estatus VIP] Descompte Entrenador: "
+            << (descompteEntrenador * 100) << "%" << std::endl;
+    }
+};
+
+
+int main() {
+    Tarifa tarifaEstandard("Estàndard Full-Access", 50.0);
+    Tarifa tarifaPremium("Premium + Sauna", 80.0);
+   
+    Soci soci1("Marc Pérez", 101, tarifaEstandard);
+   
+    SociVIP sociVIP1("Laura Gómez", 202, tarifaPremium, 0.25);
+
+    std::cout << "Info dels socis:" << std::endl;
+    soci1.mostrarInfo();
+    std::cout << "-----------------------------------" << std::endl;
+    sociVIP1.mostrarInfo();
+
+    return 0;
+}
